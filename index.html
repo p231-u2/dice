@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Minew Smart Dice</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#121a2b;--panel2:#172238;--line:#2b3850;--text:#edf3ff;--muted:#9aa9c2;--accent:#73e0c1;--warn:#ffd27a;--bad:#ff8f9b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#182744 0,#0b1020 55%);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1100px;margin:auto;padding:24px 16px 48px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}.brand{display:flex;gap:12px;align-items:center}.logo{width:46px;height:46px;border-radius:14px;background:var(--accent);color:#08151a;display:grid;place-items:center;font-weight:900;font-size:21px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:800}.sub{color:var(--muted);font-size:14px;margin-top:2px}h1{font-size:clamp(24px,4vw,36px);margin:0;letter-spacing:-.03em}h2{font-size:17px;margin:0 0 14px}p{margin:8px 0}.layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.card{background:linear-gradient(145deg,rgba(23,34,56,.96),rgba(16,24,39,.96));border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}.hero{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:18px}.status{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:var(--muted);font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:#8290a6}.dot.good{background:var(--accent)}.dot.bad{background:var(--bad)}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}button,select,input{font:inherit}button{border:1px solid var(--line);border-radius:11px;padding:10px 14px;color:var(--text);background:#202e46;cursor:pointer;font-weight:700}button:hover:not(:disabled){filter:brightness(1.15)}button:disabled{opacity:.42;cursor:not-allowed}.primary{background:var(--accent);border-color:var(--accent);color:#071b18}.danger{background:#452632;border-color:#784052}.ghost{background:transparent}.small{font-size:13px;padding:7px 10px}.big-result{font-size:clamp(64px,12vw,104px);font-weight:850;letter-spacing:-.08em;line-height:1;color:var(--accent);margin:10px 0}.result-label{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{padding:12px;background:#0d1525;border:1px solid var(--line);border-radius:12px}.metric small{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-variant-numeric:tabular-nums;font-size:22px;margin-top:4px}.pill{display:inline-block;background:#24334b;border-radius:8px;padding:4px 8px;font-size:13px}.muted{color:var(--muted)}.notice{border-left:3px solid var(--warn);padding:10px 12px;background:#302a20;border-radius:0 10px 10px 0;color:#ffe8bd;font-size:13px}.oknotice{border-left-color:var(--accent);background:#142b2b;color:#c5fff0}.calibration{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.calrow{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--line);background:#0d1525;padding:10px;border-radius:11px}.calrow label{font-weight:700}.calrow select{max-width:100px;background:#202e46;color:var(--text);border:1px solid var(--line);padding:7px;border-radius:8px}.logs{height:230px;overflow:auto;background:#080d17;border:1px solid var(--line);border-radius:10px;padding:10px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere}.rowbetween{display:flex;justify-content:space-between;align-items:center;gap:10px}.switch{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:14px}.switch input{accent-color:var(--accent);width:18px;height:18px}.footer{color:var(--muted);font-size:12px;margin-top:16px}.full{grid-column:1/-1}.state{font-size:15px;font-weight:700}.calhelp{font-size:13px;color:var(--muted);margin-bottom:12px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.hero .result{text-align:left}.full{grid-column:auto}.calibration{grid-template-columns:1fr 1fr}}@media(max-width:420px){main{padding:16px 10px 32px}.card{padding:14px}.calibration{grid-template-columns:1fr}.metrics{gap:6px}.metric{padding:9px}.metric strong{font-size:18px}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <div class="brand"><div class="logo">6</div><div><div class="eyebrow">BLE sensor project</div><h1>Minew Smart Dice</h1><div class="sub">Real sensor data → calibrated face → spoken result</div></div></div>
+  <div id="browserStatus" class="status"><span class="dot"></span><span>Checking browser…</span></div>
+</header>
+
+<div class="layout">
+<section class="card hero">
+ <div>
+  <div class="rowbetween"><h2>Beacon connection</h2><span id="connBadge" class="status"><span class="dot" id="connDot"></span><span id="connText">Not connected</span></span></div>
+  <p class="muted">Choose your beacon from the browser's Bluetooth picker. This page never fabricates readings.</p>
+  <div class="controls">
+   <button id="connectBtn" class="primary">Connect beacon</button>
+   <button id="disconnectBtn" class="ghost" disabled>Disconnect</button>
+   <button id="startBtn" disabled>Start detection</button>
+   <button id="stopBtn" disabled>Stop detection</button>
+  </div>
+  <p id="dataMode" class="sub">Sensor source: not established</p>
+ </div>
+ <div class="result"><div class="result-label">Last stable face</div><div id="faceNumber" class="big-result">—</div><div id="faceDesc" class="muted">Waiting for verified sensor data</div></div>
+</section>
+
+<section class="card">
+ <h2>Live accelerometer</h2>
+ <div class="metrics">
+  <div class="metric"><small>X axis</small><strong id="xVal">—</strong></div>
+  <div class="metric"><small>Y axis</small><strong id="yVal">—</strong></div>
+  <div class="metric"><small>Z axis</small><strong id="zVal">—</strong></div>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><span class="pill">Orientation: <b id="orientation">—</b></span><span class="pill">Motion: <b id="motionState">Waiting</b></span></div>
+ <p class="sub" id="stabilityText">A result is spoken only after verified readings settle.</p>
+ <div class="controls"><label class="switch"><input id="voiceToggle" type="checkbox" checked> Voice announcements</label><button id="testVoiceBtn" class="small ghost">Test voice</button></div>
+ <p class="sub">Last spoken: <b id="lastSpoken">Nothing yet</b></p>
+</section>
+
+<section class="card">
+ <h2>Six-face calibration</h2>
+ <p class="calhelp">Place the dice with a known number facing up, select the detected sensor direction, then assign that number. Each direction must map to a unique face.</p>
+ <div id="calibration" class="calibration"></div>
+ <div class="controls"><button id="saveCalBtn" class="small">Save calibration on this device</button><button id="resetCalBtn" class="small ghost">Reset mapping</button></div>
+ <p class="sub" id="calStatus">Calibration not verified</p>
+</section>
+
+<section class="card full">
+ <div class="rowbetween"><h2>Diagnostic log</h2><div class="controls" style="margin:0"><button id="copyLogBtn" class="small ghost">Copy log</button><button id="clearLogBtn" class="small ghost">Clear</button></div></div>
+ <div id="log" class="logs" role="log" aria-live="polite"></div>
+ <p class="footer">For diagnostics, logs include BLE state and raw advertisement bytes, but not a public device address. Keep logs private if you share them.</p>
+</section>
+
+<section class="card full">
+ <h2>Important protocol status</h2>
+ <div class="notice">The exact Beacon Plus-BL firmware's advertisement payload has not been independently confirmed here. The app can inspect real advertisements and test a documented-looking Minew ACC candidate parser, but it will only publish sensor values after payload shape and plausibility checks. If the beacon does not expose a usable advertisement stream in your browser, this app will report that rather than guessing a GATT characteristic or decoding encrypted data.</div>
+ <p class="sub">Web Bluetooth requires a supported browser and HTTPS or localhost. Chrome/Edge desktop are the best first test. iPhone Safari generally does not support Web Bluetooth. Advertisement scanning support varies by browser. Speech synthesis may be unavailable or require a user gesture.</p>
+</section>
+</div>
+</main>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const SERVICE_CUSTOM = "7f280001-8204-f393-e0a9-e50e24dcca9e";
+const SERVICE_EDDYSTONE = "a3c87500-8ed3-4bdf-8a39-a01bebede295";
+const SERVICE_FFE1 = "0000ffe1-0000-1000-8000-00805f9b34fb";
+const DIRS = ["X+","X-","Y+","Y-","Z+","Z-"];
+const WORDS = ["One","Two","Three","Four","Five","Six"];
+let device = null, server = null, scanning = false, detecting = false;
+let advertisementHandler = null, disconnectHandler = null, timer = null;
+let latest = null, samples = [], stableCandidate = null, stableSince = 0;
+let lastAnnouncedDirection = null, lastSpokenFace = null, lastSampleAt = 0;
+let candidateParserEnabled = true, parsedSamples = 0, advCount = 0;
+let calibration = { "X+":1,"X-":6,"Y+":2,"Y-":5,"Z+":3,"Z-":4 };
+let lastDirection = null, moving = false, motionBaseline = null;
+const cfg = { stableMs:900, stillDelta:0.10, gravityMin:0.65, dominance:1.20, edgeRatio:1.18, maxGapMs:1800 };
+function log(msg, level="info") {
+ const box=$("log"), time=new Date().toLocaleTimeString();
+ const line=`[${time}] ${level.toUpperCase()}: ${msg}\n`;
+ box.textContent += line; box.scrollTop=box.scrollHeight;
+ if(box.textContent.length>24000) box.textContent=box.textContent.slice(-18000);
+}
+function setConn(text, kind="") { $("connText").textContent=text; $("connDot").className="dot "+kind; }
+function bytesHex(bytes){return Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join(" ");}
+function fmt(v){return Number.isFinite(v)?v.toFixed(3):"—";}
+function supportCheck(){
+ const secure=window.isSecureContext;
+ const ble=!!(navigator.bluetooth && navigator.bluetooth.requestDevice);
+ const speech=!!window.speechSynthesis && typeof SpeechSynthesisUtterance!=="undefined";
+ $("browserStatus").innerHTML=`<span class="dot ${ble&&secure?"good":"bad"}"></span><span>${ble&&secure?"Web Bluetooth available":!secure?"HTTPS/localhost required":"Web Bluetooth unavailable"}</span>`;
+ $("connectBtn").disabled=!(ble&&secure);
+ if(!ble) log("Web Bluetooth API not detected. Try Chrome or Edge on desktop/Android.");
+ if(!secure) log("This page is not in a secure context. Open via HTTPS or localhost.");
+ if(!speech) log("SpeechSynthesis is unavailable; results will remain visible as text.");
+}
+function renderCalibration(){
+ const root=$("calibration"); root.innerHTML="";
+ DIRS.forEach(dir=>{
+  const row=document.createElement("div"); row.className="calrow";
+  const label=document.createElement("label"); label.textContent=dir+" direction"; label.htmlFor="cal-"+dir;
+  const select=document.createElement("select"); select.id="cal-"+dir; select.setAttribute("aria-label",dir+" direction face");
+  for(let n=1;n<=6;n++){const opt=document.createElement("option");opt.value=String(n);opt.textContent=`Face ${n}`;if(calibration[dir]===n)opt.selected=true;select.appendChild(opt);}
+  select.addEventListener("change",()=>{calibration[dir]=Number(select.value); updateCalibrationStatus();});
+  row.append(label,select);root.appendChild(row);
+ });
+ updateCalibrationStatus();
+}
+function updateCalibrationStatus(){
+ const vals=DIRS.map(d=>calibration[d]), unique=new Set(vals).size===6;
+ $("calStatus").textContent=unique?"Mapping has six unique face numbers. Verify every direction physically before relying on it.":"Warning: each of the six directions must map to a unique number.";
+ $("calStatus").style.color=unique?"var(--accent)":"var(--warn)";
+}
+function saveCal(){try{localStorage.setItem("minewDiceCalibration",JSON.stringify(calibration));log("Calibration saved locally.");}catch(e){log("Could not save calibration: "+e.message,"warn");}}
+function loadCal(){try{const v=JSON.parse(localStorage.getItem("minewDiceCalibration")||"null");if(v&&DIRS.every(d=>Number.isInteger(v[d])&&v[d]>=1&&v[d]<=6))calibration=v;}catch{}}
+function directionOf(v){
+ const a=[Math.abs(v.x),Math.abs(v.y),Math.abs(v.z)], sorted=[...a].sort((x,y)=>y-x);
+ if(sorted[0]<cfg.gravityMin || sorted[0]/Math.max(sorted[1],0.001)<cfg.dominance) return null;
+ const axis=a.indexOf(sorted[0]), sign=[v.x,v.y,v.z][axis]>=0?"+":"-";
+ return ["X","Y","Z"][axis]+sign;
+}
+function processVector(v, source){
+ latest={...v,t:performance.now(),source}; lastSampleAt=latest.t;
+ $("xVal").textContent=fmt(v.x);$("yVal").textContent=fmt(v.y);$("zVal").textContent=fmt(v.z);
+ const dir=directionOf(v); $("orientation").textContent=dir||"Ambiguous";
+ samples.push({ ...v, dir, t:latest.t }); if(samples.length>12)samples.shift();
+ if(!detecting){$("motionState").textContent="Detection stopped";return;}
+ if(!dir){
+  stableCandidate=null;stableSince=0;moving=true;$("motionState").textContent="Ambiguous / moving";
+  $("stabilityText").textContent="Not enough separation between axes. Waiting instead of guessing.";return;
+ }
+ const prev=samples.length>1?samples[samples.length-2]:null;
+ const delta=prev?Math.hypot(v.x-prev.x,v.y-prev.y,v.z-prev.z):Infinity;
+ if(!prev||delta>cfg.stillDelta){moving=true;stableCandidate=null;stableSince=0;$("motionState").textContent="Settling";$("stabilityText").textContent="Movement or sensor jitter detected. Waiting for stable readings.";return;}
+ if(stableCandidate!==dir){stableCandidate=dir;stableSince=latest.t;moving=true;$("motionState").textContent="Checking stability";return;}
+ if(latest.t-stableSince>=cfg.stableMs){
+  moving=false;$("motionState").textContent="Stable";
+  const face=calibration[dir];$("faceNumber").textContent=String(face);$("faceDesc").textContent=`${dir} direction mapped to face ${face}`;
+  $("stabilityText").textContent="Stable orientation detected from sensor readings.";
+  if(lastAnnouncedDirection!==dir){
+   lastAnnouncedDirection=dir;
+   if($("voiceToggle").checked && window.speechSynthesis){
+    try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(WORDS[face-1]);u.rate=0.9;window.speechSynthesis.speak(u);$("lastSpoken").textContent=`${face} (${WORDS[face-1]})`;log(`Voice announced face ${face} from ${dir}.`);}catch(e){log("Speech failed: "+e.message,"error");}
+   }
+  }
+ }
+}
+function parseCandidate(bytes){
+ // Candidate ONLY: Minew E8/i7-style ACC example, not confirmed for Beacon Plus-BL.
+ // Expected 15 bytes: A1, model, battery, X int16 BE 8.8, Y int16 BE 8.8, Z int16 BE 8.8, 6-byte MAC.
+ // A byte sequence is accepted only when frame marker and physical magnitude checks pass.
+ if(bytes.length!==15 || bytes[0]!==0xA1) return null;
+ const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+ const x=view.getInt16(3,false)/256, y=view.getInt16(5,false)/256, z=view.getInt16(7,false)/256;
+ const mag=Math.hypot(x,y,z);
+ if(![x,y,z].every(Number.isFinite)||mag<0.45||mag>2.2) return null;
+ return {x,y,z,raw:bytes,format:"candidate ACC signed 8.8 BE",battery:bytes[2]};
+}
+function onAdvertisement(event){
+ advCount++;
+ const name=event.device?.name||device?.name||"unnamed device";
+ const serviceData=event.serviceData;
+ if(!serviceData || serviceData.size===0){if(advCount<=4)log(`Advertisement from ${name} has no serviceData exposed to this page.`);return;}
+ for(const [uuid,dataView] of serviceData.entries()){
+  const bytes=new Uint8Array(dataView.buffer,dataView.byteOffset,dataView.byteLength);
+  log(`Advertisement serviceData ${uuid}: ${bytesHex(bytes)}`);
+  const parsed=candidateParserEnabled?parseCandidate(bytes):null;
+  if(parsed){
+   parsedSamples++; $("dataMode").textContent=`Sensor source: advertisement candidate parser (${parsed.format}); validation ${parsedSamples} sample(s)`;
+   $("dataMode").style.color="var(--warn)";
+   log(`Candidate ACC payload passed marker/length/magnitude checks; battery byte ${parsed.battery}. This is not yet device-specific protocol proof.`,"warn");
+   processVector(parsed,"advertisement");
+  }
+ }
+ if(advCount===1) log(`First advertisement event received from ${name}.`);
+}
+async function connect(){
+ if(!navigator.bluetooth){log("Web Bluetooth unavailable.","error");return;}
+ try{
+  $("connectBtn").disabled=true;setConn("Opening device picker");
+  log("Opening Bluetooth device picker. Select the Minew beacon.");
+  device=await navigator.bluetooth.requestDevice({
+   acceptAllDevices:true,
+   optionalServices:[SERVICE_CUSTOM,SERVICE_EDDYSTONE,SERVICE_FFE1,"device_information"]
+  });
+  log(`User selected device name: ${device.name||"(name not exposed)"}.`);
+  device.addEventListener("advertisementreceived",onAdvertisement);
+  disconnectHandler=()=>{setConn("Disconnected","bad");log("GATT server disconnected. Browser/device may have dropped the link; no blind reconnect loop will run.","error");server=null;$("disconnectBtn").disabled=true;$("startBtn").disabled=true;$("stopBtn").disabled=true;scanning=false;detecting=false;};
+  device.addEventListener("gattserverdisconnected",disconnectHandler);
+  setConn("Device selected");
+  // Attempt advertisement stream first; watchAdvertisements is experimental and not supported everywhere.
+  if(typeof device.watchAdvertisements==="function"){
+   try{
+    await device.watchAdvertisements({signal:undefined});
+    scanning=true;log("watchAdvertisements() started. Waiting for real service-data advertisements.");
+    $("dataMode").textContent="Sensor source: listening to advertisements; parser not yet verified";
+   }catch(e){log(`Advertisement listening failed (${e.name}: ${e.message}). Will attempt GATT discovery for diagnostics.`,"warn");}
+  }else log("This browser does not expose BluetoothDevice.watchAdvertisements(). Advertisement sensor mode unavailable.","warn");
+  try{
+   if(device.gatt){
+    log("Connecting to GATT for service/characteristic diagnostics (not assuming these carry plaintext accelerometer data).");
+    server=await device.gatt.connect();
+    setConn("GATT connected","good");$("disconnectBtn").disabled=false;$("startBtn").disabled=false;
+    const services=await server.getPrimaryServices();
+    log(`GATT service discovery complete: ${services.length} service(s).`);
+    for(const s of services){
+     log(`Service: ${s.uuid}`);
+     try{const chars=await s.getCharacteristics();for(const c of chars)log(`  Characteristic ${c.uuid}; properties=${JSON.stringify(c.properties)}`);}catch(e){log(`  Characteristic discovery failed for ${s.uuid}: ${e.message}`,"warn");}
+    }
+   }else {setConn("Device selected, no GATT","");}
+  }catch(e){setConn("GATT unavailable","bad");log(`GATT connect/discovery failed: ${e.name}: ${e.message}`,"error");}
+  if(scanning){$("dataMode").textContent="Sensor source: advertisement listener active; waiting for recognized payload";$("startBtn").disabled=false;}
+  if(!scanning&&!server){log("Neither advertisement listening nor GATT connection is available. Check browser support and beacon settings.","error");}
+ }catch(e){
+  if(e.name==="NotFoundError")log("Bluetooth picker cancelled.","warn");
+  else log(`Connect failed: ${e.name}: ${e.message}`,"error");
+  setConn("Not connected","bad");
+ }finally{$("connectBtn").disabled=!(navigator.bluetooth&&window.isSecureContext);}
+}
+function startDetection(){
+ detecting=true;samples=[];stableCandidate=null;stableSince=0;lastAnnouncedDirection=null;
+ $("startBtn").disabled=true;$("stopBtn").disabled=false;
+ log("Detection started. No result will be announced until real candidate accelerometer packets pass validation and settle.");
+ if(!scanning)log("Advertisement stream is not active. GATT service discovery alone does not provide verified XYZ readings.","warn");
+}
+function stopDetection(){detecting=false;stableCandidate=null;stableSince=0;$("startBtn").disabled=!(device&&((scanning)||server));$("stopBtn").disabled=true;$("motionState").textContent="Stopped";log("Detection stopped.");}
+async function disconnect(){
+ stopDetection();
+ try{if(device&&device.watchAdvertisements)device.unwatchAdvertisements();}catch(e){log("Stopping advertisement watch: "+e.message,"warn");}
+ try{if(device?.gatt?.connected)device.gatt.disconnect();}catch(e){log("Disconnect error: "+e.message,"warn");}
+ if(device){device.removeEventListener("advertisementreceived",onAdvertisement);if(disconnectHandler)device.removeEventListener("gattserverdisconnected",disconnectHandler);}
+ device=null;server=null;scanning=false;setConn("Not connected");$("disconnectBtn").disabled=true;$("startBtn").disabled=true;$("stopBtn").disabled=true;$("connectBtn").disabled=!(navigator.bluetooth&&window.isSecureContext);$("dataMode").textContent="Sensor source: not established";log("Disconnected by user.");
+}
+$("connectBtn").addEventListener("click",connect);
+$("disconnectBtn").addEventListener("click",disconnect);
+$("startBtn").addEventListener("click",startDetection);
+$("stopBtn").addEventListener("click",stopDetection);
+$("saveCalBtn").addEventListener("click",saveCal);
+$("resetCalBtn").addEventListener("click",()=>{calibration={"X+":1,"X-":6,"Y+":2,"Y-":5,"Z+":3,"Z-":4};renderCalibration();log("Calibration reset to starter values. These values are not a verified dice layout.","warn");});
+$("testVoiceBtn").addEventListener("click",()=>{if(!window.speechSynthesis){log("Speech synthesis unavailable.","error");return;}try{const u=new SpeechSynthesisUtterance("Voice test. Smart dice is ready.");window.speechSynthesis.speak(u);log("Voice test requested.");}catch(e){log("Voice test failed: "+e.message,"error");}});
+$("clearLogBtn").addEventListener("click",()=>$("log").textContent="");
+$("copyLogBtn").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("log").textContent);log("Diagnostic log copied.");}catch(e){log("Clipboard copy failed; select and copy log manually.","warn");}});
+loadCal();renderCalibration();supportCheck();
+log("App loaded. This app does not simulate a BLE connection or invent sensor values.");
+log("Known GATT UUIDs are used for discovery only. No characteristic is assumed to contain plaintext XYZ.");
+log("Candidate advertisement parser is based on an example from other Minew models and is explicitly unverified for Beacon Plus-BL.");
+})();
+</script>
+</body>
+</html>
